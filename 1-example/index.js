@@ -1,5 +1,6 @@
 const { ApolloServer } = require("@apollo/server")
 const { startStandaloneServer } = require("@apollo/server/standalone")
+const { v1: uuid } = require("uuid")
 
 let persons = [
   {
@@ -35,6 +36,15 @@ const typeDefs = `
     phone: String
     address: Address!
     id: ID!
+  }
+
+  type Mutation {
+    addPerson(
+      name: String!
+      phone: String
+      street: String!
+      city: String!
+    ): Person
   }
 
   type Query {
