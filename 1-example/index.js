@@ -1,5 +1,6 @@
 const { ApolloServer } = require("@apollo/server")
 const { startStandaloneServer } = require("@apollo/server/standalone")
+const { GraphQLError } = require("graphql")
 const { v1: uuid } = require("uuid")
 
 let persons = [
@@ -47,9 +48,14 @@ const typeDefs = `
     ): Person
   }
 
+  enum YesNo {
+    YES
+    NO
+  }
+
   type Query {
     personCount: Int!
-    allPersons: [Person!]!
+    allPersons(phone: YesNo): [Person!]!
     findPerson(name: String!): Person
   }
 `
@@ -57,7 +63,13 @@ const typeDefs = `
 const resolvers = {
   Query: {
     personCount: () => persons.length,
-    allPersons: () => persons,
+    allPersons: (root, args) => {
+      if (!args.phone) {
+        return persons
+      }
+      const byPhone = (person) => args.phone === "YES" ? person.phone : !person.phone
+      return persons.filter((p) => byPhone(p))
+    },
     findPerson: (root, args) => persons.find((p) => p.name === args.name),
   },
   Person: {
@@ -66,6 +78,21 @@ const resolvers = {
         street: root.street,
         city: root.city,
       }
+    },
+  },
+  Mutation: {
+    addPerson: (root, args) => {
+      if (persons.find((p) => p.name === args.name)) {
+        throw new GraphQLError("name must be unique", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+            invalidArgs: args.name,
+          },
+        })
+      }
+      const person = { ...args, id: uuid() }
+      persons = persons.concat(person)
+      return person
     },
   },
 }
