@@ -1,33 +1,79 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { gql, useQuery } from "@apollo/client"
+import { useState } from "react"
 
-function App() {
-  const [count, setCount] = useState(0)
+const ALL_PERSONS = gql`
+  query {
+    allPersons {
+      name
+      phone
+      id
+    }
+  }
+`
+
+const FIND_PERSON = gql`
+  query findPersonByName($nameToSearch: String!) {
+    findPerson(name: $nameToSearch) {
+      name
+      phone
+      id
+      address {
+        street
+        city
+      }
+    }
+  }
+`
+
+const App = () => {
+  const { loading, error, data } = useQuery(ALL_PERSONS)
+
+  if (loading) return <>Loading...</>
+  if (error) return <>Error!</>
 
   return (
     <>
+      <Persons persons={data.allPersons} />
+    </>
+  )
+}
+
+const Persons = ({ persons }) => {
+  const [nameToSearch, setNameToSearch] = useState(null)
+  const { data } = useQuery(FIND_PERSON, {
+    variables: { nameToSearch },
+    skip: !nameToSearch,
+  })
+
+  if (nameToSearch && data) {
+    return (
+      <Person person={data.findPerson} onClose={() => setNameToSearch(null)} />
+    )
+  }
+  return (
+    <div>
+      <h2>Persons</h2>
+      {persons.map((person) => (
+        <div key={person.name}>
+          {person.name} {person.phone}
+          <button onClick={() => setNameToSearch(person.name)}>
+            show address
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+const Person = ({ person, onClose }) => {
+  return (
+    <>
+      <h2>{person.name}</h2>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {person.address.street} {person.address.city}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div>{person.phone}</div>
+      <button onClick={onClose}>close</button>
     </>
   )
 }
