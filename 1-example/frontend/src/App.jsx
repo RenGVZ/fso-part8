@@ -28,7 +28,7 @@ const FIND_PERSON = gql`
 const App = () => {
   const { loading, error, data } = useQuery(ALL_PERSONS)
 
-  if (loading) return <>Loading...</>
+  if (loading) return <>Loading content...</>
   if (error) return <>Error!</>
 
   return (
