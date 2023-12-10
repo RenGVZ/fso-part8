@@ -5,7 +5,6 @@ import {
   ApolloClient,
   ApolloProvider,
   InMemoryCache,
-  gql,
 } from "@apollo/client"
 
 const client = new ApolloClient({
@@ -13,21 +12,21 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
-const query = gql`
-  query {
-    allPersons {
-      name
-      phone
-      address {
-        street
-        city
-      }
-      id
-    }
-  }
-`
+// const query = gql`
+//   query {
+//     allPersons {
+//       name
+//       phone
+//       address {
+//         street
+//         city
+//       }
+//       id
+//     }
+//   }
+// `
 
-client.query({ query }).then((res) => console.log(res.data))
+// client.query({ query }).then((res) => console.log(res.data))
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
