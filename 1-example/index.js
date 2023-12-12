@@ -47,6 +47,12 @@ const typeDefs = `
       city: String!
     ): Person
   }
+  type Mutation {
+    editNumber(
+      name: String!
+      phone: String!
+    ): Person
+  }
 
   enum YesNo {
     YES
@@ -67,7 +73,8 @@ const resolvers = {
       if (!args.phone) {
         return persons
       }
-      const byPhone = (person) => args.phone === "YES" ? person.phone : !person.phone
+      const byPhone = (person) =>
+        args.phone === "YES" ? person.phone : !person.phone
       return persons.filter((p) => byPhone(p))
     },
     findPerson: (root, args) => persons.find((p) => p.name === args.name),
@@ -94,6 +101,26 @@ const resolvers = {
       persons = persons.concat(person)
       return person
     },
+    editNumber: (root, args) => {
+      const person = persons.find(p => p.name === args.name)
+      if(!person) {
+        throw new GraphQLError("Nobody with that name found", {
+          extensions: {
+            code: "BAD_USER_INPUT",
+            invalidArgs: args.name,
+          },
+        })
+      }
+      const updatedPerson = { ...person, phone: args.phone }
+      const newPersons = persons.map(p => {
+        if(p.name === args.name) {
+          return updatedPerson
+        } else {
+          return p
+        }
+      })
+      persons = newPersons
+    }
   },
 }
 
