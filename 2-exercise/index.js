@@ -176,8 +176,10 @@ const resolvers = {
     },
   },
   Author: {
-    bookCount: (root) => {
-      return books.filter((b) => b.author === root.name).length
+    bookCount: async (root) => {
+      let books = await Book.find({}).populate('author')
+      const number = books.filter(b => b.author.name === root.name).length
+      return number
     },
   },
   Mutation: {
@@ -218,16 +220,20 @@ const resolvers = {
       return book
     },
 
-    editAuthor: (root, args) => {
+    editAuthor: async (root, args) => {
       if (args.setBornTo) {
-        const author = authors.find((a) => a.name === args.name)
-        if (author) {
-          const edited = { ...author, born: args.setBornTo }
-          const filtered = authors.filter(a => a.name !== edited.name)
-          authors = [ ...filtered, edited ]
-          return edited
-        } else {
-          return null
+        const updated = await Author.findOneAndUpdate({ name: args.name}, { born: args.setBornTo })
+        try {
+          updated.save()
+          return updated
+        } catch(error) {
+          throw new GraphQLError("Author age update failed", {
+            extensions: {
+              code: "BAD_USER_INPUT",
+              invalidArgs: args.name,
+              error,
+            },
+          })
         }
       }
     },
