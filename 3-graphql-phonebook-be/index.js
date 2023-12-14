@@ -80,12 +80,6 @@ const typeDefs = `
     id: ID!
   }
 
-  type Query {
-    personCount: Int!
-    allPersons: [Person!]!
-    findPerson(name: String!): Person
-  }
-
   type Mutation {
     addPerson(
       name: String!
