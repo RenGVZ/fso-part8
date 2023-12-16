@@ -2,7 +2,7 @@ import { useQuery } from "@apollo/client"
 import { GET_AUTHORS } from "../queries"
 import EditBirthYear from "./EditBirthYear"
 
-const Authors = () => {
+const Authors = ({ setError }) => {
   const {data, loading, error} = useQuery(GET_AUTHORS)
 
   if(error) return <div>Error</div>
@@ -28,7 +28,7 @@ const Authors = () => {
         </tbody>
       </table>
 
-      <EditBirthYear />
+      <EditBirthYear setError={setError} />
     </div>
   )
 }

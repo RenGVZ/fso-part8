@@ -1,18 +1,29 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { LOGIN } from "../queries"
 import { useMutation } from "@apollo/client"
 
-const LoginForm = () => {
+const LoginForm = ({ setError, setToken }) => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
 
-  const [login] = useMutation(LOGIN)
+  const [login, result] = useMutation(LOGIN, {
+    onError: (error) => {
+      setError(error.graphQLErrors[0].message)
+    }
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    const res = await login()
-    console.log('res:', res)
+    login({ variables: { username, password } })
   }
+
+  useEffect(() => {
+    if(result.data) {
+      const token = result.data.login.value
+      setToken(token)
+      localStorage.setItem('library-app-token', token)
+    }
+  }, [result.data, setToken])
 
   return (
     <>

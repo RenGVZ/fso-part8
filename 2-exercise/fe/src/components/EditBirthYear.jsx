@@ -2,17 +2,31 @@ import { useState } from "react"
 import { useQuery, useMutation } from "@apollo/client"
 import { EDIT_AUTHOR, GET_AUTHORS } from "../queries"
 
-const EditBirthYear = () => {
+const EditBirthYear = ({ setError }) => {
   const [name, setName] = useState("")
   const [born, setBorn] = useState("")
 
   const { data } = useQuery(GET_AUTHORS)
 
-  const [changeBirth] = useMutation(EDIT_AUTHOR)
+  const [changeBirth] = useMutation(EDIT_AUTHOR, {
+    onError: (error) => {
+      const messages = error.graphQLErrors.map((e) => e.message).join("\n")
+      setError(messages)
+    },
+    update: (cache, response) => {
+      cache.updateQuery({ query: GET_AUTHORS }, ({ allAuthors }) => {
+        return {
+          allAuthors: allAuthors.map((a) =>
+            a.name === response.data.editAuthor.name ? { ...a, born: born } : a
+          ),
+        }
+      })
+    },
+  })
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    if(name && name !== '') {
+    if (name && name !== "") {
       changeBirth({ variables: { name, born: parseInt(born) } })
       setBorn("")
     } else {
