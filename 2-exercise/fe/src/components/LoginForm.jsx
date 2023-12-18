@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react"
 import { LOGIN } from "../queries"
 import { useMutation } from "@apollo/client"
+import { useNavigate } from "react-router-dom"
+import Notify from "./Notify"
 
-const LoginForm = ({ setError, setToken }) => {
+const LoginForm = ({ setError, setToken, errorMessage }) => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const navigate = useNavigate()
 
   const [login, result] = useMutation(LOGIN, {
     onError: (error) => {
       setError(error.graphQLErrors[0].message)
-    }
+    },
   })
 
   const handleSubmit = async (e) => {
@@ -18,15 +21,17 @@ const LoginForm = ({ setError, setToken }) => {
   }
 
   useEffect(() => {
-    if(result.data) {
+    if (result.data) {
       const token = result.data.login.value
       setToken(token)
-      localStorage.setItem('library-app-token', token)
+      localStorage.setItem("library-app-token", token)
+      navigate("/")
     }
-  }, [result.data, setToken])
+  }, [result.data, setToken, navigate])
 
   return (
     <>
+      <Notify errorMessage={errorMessage} />
       <form onSubmit={handleSubmit}>
         <div>
           username

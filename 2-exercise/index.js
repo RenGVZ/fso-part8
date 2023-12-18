@@ -53,8 +53,8 @@ const typeDefs = `
   type Mutation {
     addBook(
       title: String!
-      published: Int!
       author: String!
+      published: Int!
       genres: [String!]!
     ): Book!
 
@@ -109,6 +109,7 @@ const resolvers = {
         books = books.filter(
           (b) => b.author.name === args.author && b.genres.includes(args.genre)
         )
+        console.log('books:', books);
         return books
       }
     },
@@ -144,7 +145,7 @@ const resolvers = {
       let authorId = null
       if (!author) {
         try {
-          const newAuthor = await new Author({ name: args.author })
+          const newAuthor = new Author({ name: args.author })
           await newAuthor.save()
           authorId = newAuthor._id
         } catch (error) {

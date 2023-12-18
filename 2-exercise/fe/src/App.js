@@ -5,7 +5,6 @@ import NewBook from "./components/NewBook"
 import { useState } from "react"
 import LoginForm from "./components/LoginForm"
 import { useApolloClient } from "@apollo/client"
-import Notify from "./components/Notify"
 
 const linkStyle = {
   background: "grey",
@@ -17,7 +16,7 @@ const linkStyle = {
 }
 
 const App = () => {
-  const [token, setToken] = useState(null)
+  const [token, setToken] = useState(localStorage.getItem("library-app-token"))
   const [errorMessage, setErrorMessage] = useState(null)
   const client = useApolloClient()
 
@@ -34,13 +33,6 @@ const App = () => {
     }, 8000)
   }
 
-  if (!token) return (
-    <>
-      <Notify errorMessage={errorMessage} />
-      <LoginForm setToken={setToken} setError={notify} />
-    </>
-  )
-
   return (
     <div>
       <div style={{ margin: "20px 0px" }}>
@@ -50,10 +42,18 @@ const App = () => {
         <Link style={linkStyle} to="/books">
           books
         </Link>
-        <Link style={linkStyle} to="/add">
-          add book
-        </Link>
-        <button onClick={logout}>logout</button>
+        {token && (
+          <Link style={linkStyle} to="/add">
+            add book
+          </Link>
+        )}
+        {token ? (
+          <button onClick={logout}>logout</button>
+        ) : (
+          <Link style={linkStyle} to="/login">
+            login
+          </Link>
+        )}
       </div>
 
       <Routes>
@@ -61,7 +61,31 @@ const App = () => {
 
         <Route path="/books" element={<Books />} />
 
-        <Route path="/add" element={<NewBook setError={notify} />} />
+        <Route
+          path="/add"
+          element={
+            !token ? (
+              <LoginForm
+                errorMessage={errorMessage}
+                setToken={setToken}
+                setError={notify}
+              />
+            ) : (
+              <NewBook setError={notify} />
+            )
+          }
+        />
+
+        <Route
+          path="/login"
+          element={
+            <LoginForm
+              errorMessage={errorMessage}
+              setToken={setToken}
+              setError={notify}
+            />
+          }
+        ></Route>
       </Routes>
     </div>
   )
