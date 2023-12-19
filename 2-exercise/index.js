@@ -107,7 +107,7 @@ const resolvers = {
         books = books.filter((book) => book.author.name === args.author)
         return books
       } else if (!args.author && args.genre) {
-        let books = await Book.find({})
+        let books = await Book.find({}).populate("author")
         books = books.filter((book) => book.genres.includes(args.genre))
         return books
       } else {

@@ -3,25 +3,30 @@ import { GET_BOOKS } from "../queries"
 import { useState, useEffect } from "react"
 
 const Books = () => {
-  const { data, loading, error } = useQuery(GET_BOOKS)
+  const [selectedGenre, setSelectedGenre] = useState("")
+  const { data, loading, error, refetch } = useQuery(GET_BOOKS, {
+    variables: selectedGenre === "" ? {} : { genre: selectedGenre },
+  })
   const [books, setBooks] = useState([])
   const [genres, setGenres] = useState([])
-  const [selectedGenre, setSelectedGenre] = useState("all")
 
   useEffect(() => {
     if (data?.allBooks) {
-      let filteredBooks = data.allBooks
-      if (selectedGenre !== "all") {
-        filteredBooks = data.allBooks.filter((book) => book.genres.includes(selectedGenre))
-      }
-      setBooks(filteredBooks)
+      setBooks(data.allBooks)
 
-      if(selectedGenre === "all") {
-        const genreList = [...new Set(data.allBooks.flatMap((book) => book.genres))]
-        setGenres([...genreList, "all"])
+      if (selectedGenre === "") {
+        const genreList = [
+          ...new Set(data.allBooks.flatMap((book) => book.genres)),
+        ]
+        setGenres([...genreList, ""])
       }
     }
   }, [data, selectedGenre])
+
+  const handleGenreChange = (newGenre) => {
+    setSelectedGenre(newGenre)
+    refetch({ selectedGenre: newGenre })
+  }
 
   if (error) return <div>Error</div>
   if (loading) return <div>Loading...</div>
@@ -50,9 +55,9 @@ const Books = () => {
         <button
           key={genre}
           value={genre}
-          onClick={({ target }) => setSelectedGenre(target.value)}
+          onClick={({ target }) => handleGenreChange(target.value)}
         >
-          {genre}
+          {genre === "" ? "all" : genre}
         </button>
       ))}
     </div>
