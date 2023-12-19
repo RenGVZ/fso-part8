@@ -10,26 +10,18 @@ const Books = () => {
 
   useEffect(() => {
     if (data?.allBooks) {
-      setBooks(data.allBooks)
+      let filteredBooks = data.allBooks
+      if (selectedGenre !== "all") {
+        filteredBooks = data.allBooks.filter((book) => book.genres.includes(selectedGenre))
+      }
+      setBooks(filteredBooks)
 
-      const genreList = [
-        ...new Set(data.allBooks.flatMap((book) => book.genres)),
-      ]
-      setGenres([...genreList, "all"])
+      if(selectedGenre === "all") {
+        const genreList = [...new Set(data.allBooks.flatMap((book) => book.genres))]
+        setGenres([...genreList, "all"])
+      }
     }
-  }, [data])
-
-  // useEffect(() => {
-  //   // console.log("selectedGenre:", selectedGenre)
-  //   if(selectedGenre === "all") {
-  //     console.log('all is selected');
-  //   } else {
-  //     console.log('inside filter');
-  //     const filteredBooks = books.filter(book => book.genres.includes(selectedGenre) ? true : false)
-  //     console.log("filteredBooks:", filteredBooks)
-  //     setBooks(filteredBooks)
-  //   }
-  // }, [selectedGenre])
+  }, [data, selectedGenre])
 
   if (error) return <div>Error</div>
   if (loading) return <div>Loading...</div>
@@ -48,7 +40,7 @@ const Books = () => {
           {books.map((a) => (
             <tr key={a.title}>
               <td>{a.title}</td>
-              <td>{a.author}</td>
+              <td>{a.author.name}</td>
               <td>{a.published}</td>
             </tr>
           ))}

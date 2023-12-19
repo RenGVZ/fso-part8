@@ -78,6 +78,11 @@ const typeDefs = `
       username: String!
       password: String!
     ) : Token
+
+    editUser(
+      username: String!
+      favoriteGenre: String!
+    ) : User
   }
 
   type Query {
@@ -94,7 +99,8 @@ const resolvers = {
     bookCount: async () => Book.collection.countDocuments(),
     authorCount: async () => Author.collection.countDocuments(),
     allBooks: async (root, args) => {
-      if (!args.author && !args.genre) return await Book.find({})
+      if (!args.author && !args.genre)
+        return await Book.find({}).populate("author")
 
       if (args.author && !args.genre) {
         let books = await Book.find({}).populate("author")
@@ -109,7 +115,6 @@ const resolvers = {
         books = books.filter(
           (b) => b.author.name === args.author && b.genres.includes(args.genre)
         )
-        console.log('books:', books);
         return books
       }
     },
@@ -118,7 +123,7 @@ const resolvers = {
       return authors
     },
     me: (root, args, context) => {
-      console.log("context:", context)
+      // console.log("context:", context)
       return context.currentUser
     },
   },
@@ -257,6 +262,28 @@ const resolvers = {
       }
 
       return { value: jwt.sign(userToToken, process.env.JWT_SECRET) }
+    },
+
+    editUser: async (root, args) => {
+      if (args.favoriteGenre) {
+        const user = await User.findOneAndUpdate(
+          { username: args.username },
+          { favoriteGenre: args.favoriteGenre }
+        )
+
+        try {
+          user.save()
+          return user
+        } catch (error) {
+          throw new GraphQLError("user update unsuccessful", {
+            extensions: {
+              code: "BAD_USER_INPUT",
+              invalidArgs: args.name,
+              error,
+            },
+          })
+        }
+      }
     },
   },
 }

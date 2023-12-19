@@ -23,6 +23,9 @@ export const GET_BOOKS = gql`
       title
       published
       genres
+      author {
+        name
+      }
     }
   }
 `
@@ -74,6 +77,16 @@ export const LOGIN = gql`
       password: $password
     ) {
       value
+    }
+  }
+`
+
+export const ME = gql`
+  query ME {
+    me {
+      username
+      favoriteGenre
+      id
     }
   }
 `
