@@ -11,9 +11,16 @@ export const updateCache = (cache, query, addedPerson) => {
   const uniqByName = (a) => {
     let seen = new Set()
     return a.filter((item) => {
-      // let k = 
+      let k = item.name
+      return seen.has(k) ? false : seen.add(k)
     })
   }
+
+  cache.updateQuery(query, ({ allPersons }) => {
+    return {
+      allPersons: uniqByName(allPersons.concat(addedPerson)),
+    }
+  })
 }
 
 const App = () => {
@@ -27,11 +34,7 @@ const App = () => {
       const addedPerson = data.data.personAdded
       notify(`${addedPerson.name} added`)
 
-      client.cache.updateQuery({ query: ALL_PERSONS }, ({ allPersons }) => {
-        return {
-          allPersons: allPersons.concat(addedPerson)
-        }
-      })
+      return updateCache(client.cache, { query: ALL_PERSONS }, addedPerson)
     },
   })
 
