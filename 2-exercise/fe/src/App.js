@@ -5,7 +5,8 @@ import NewBook from "./components/NewBook"
 import { useState } from "react"
 import LoginForm from "./components/LoginForm"
 import Recommend from "./components/Recommend"
-import { useApolloClient } from "@apollo/client"
+import { useApolloClient, useSubscription } from "@apollo/client"
+import { BOOK_ADDED, GET_BOOKS } from "./queries"
 
 const linkStyle = {
   background: "grey",
@@ -33,6 +34,19 @@ const App = () => {
       setErrorMessage(null)
     }, 8000)
   }
+
+  useSubscription(BOOK_ADDED, {
+    onData: ({ data, client }) => {
+      const addedBook = data.data.bookAdded
+      window.alert(`New book added: ${addedBook.title}`)
+
+      client.cache.updateQuery({ query: GET_BOOKS }, ({ allBooks }) => {
+        return {
+          allBooks: allBooks.concat(addedBook)
+        }
+      })
+    }
+  })
 
   return (
     <div>

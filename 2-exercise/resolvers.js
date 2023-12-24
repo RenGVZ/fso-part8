@@ -91,10 +91,10 @@ const resolvers = {
           },
         })
       }
+      console.log('book:', book);
+      pubsub.publish("BOOK_ADDED", { bookAdded: book.populate("author") })
 
-      pubsub.publish('BOOK_ADDED', { bookAdded: book })
-
-      return book
+      return book.populate("author")
     },
 
     editAuthor: async (root, args, context) => {
